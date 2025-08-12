@@ -1,0 +1,37 @@
+{
+  "students": [
+    {
+      "id": "e2ae",
+      "name": "Soumik Mandal",
+      "email": "khasisoumik@gmail.com",
+      "phone": "9330664816",
+      "description": "dshnjdsz",
+      "category": "School",
+      "gender": "male",
+      "hobby": [
+        "Reading",
+        "Travelling"
+      ],
+      "programminglanguage": [
+        "Python",
+        "C++"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "0c6a",
+      "name": "Soumik Mandal",
+      "email": "khasisoumik@gmail.com",
+      "phone": "09330664816",
+      "password": "123456"
+    },
+    {
+      "id": "6343",
+      "name": "Soumik Mandal",
+      "email": "khasisoumik@gmail.com",
+      "phone": "09330664816",
+      "password": "123456"
+    }
+  ]
+}
