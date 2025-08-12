@@ -1,87 +1,62 @@
-import { useState } from "react";
-import { Box, Button, TextField, Typography, Paper, Link } from "@mui/material";
+import React from "react";
+import {
+  Box,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  Link,
+  InputLabel
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import API from "../api/api"; 
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// Validation schema
+const schema = yup.object({
+  email: yup
+    .string()
+    .email("Invalid email")
+    .required("Email is required"),
+  password: yup
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+});
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    userId: Math.random(),
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
   });
-  
-  const [error, setError] = useState({});
 
-  const SignupData = JSON.parse(localStorage.getItem("SignUpData")) || {};
-  // console.log("signup data", SignupData);
+  const onSubmit = async (data) => {
+    try {
+       const response = await API.get(`/users?email=${data.email}`);
+      if (response.data.length === 0) {
+        alert("No account found. Please sign up first.");
+        navigate("/signup");
+        return;
+      }
 
-  const email = SignupData.email;
-  const password = SignupData.password;
-
-  console.log("Email", email);
-  console.log("Password", password);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    setError((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
-  };
-
-  //Validating input values
-  const validate = () => {
-    const newError = {};
-
-    if (!formData.email.trim()) {
-      newError.email = "Email is required";
-    } else if (!formData.email.includes("@") || !formData.email.includes(".")) {
-      newError.email = "Email is invalid";
-    }
-
-    if (!formData.password.trim()) {
-      newError.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newError.password = "Password must be at least 6 characters";
-    }
-    setError(newError);
-
-    console.log("Validation errors:", newError);
-
-    return Object.keys(newError).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (validate()) {
-      if (email && password) {
-        if (formData.email !== email) {
-          alert("Incorrect email");
-          return;
-        }
-
-        if (formData.password !== password) {
-          alert("Incorrect password");
-          return;
-        }
-
-        localStorage.setItem("loginData", JSON.stringify(formData));
-        alert("Login Successful!");
+      const user = response.data[0];
+      if (user.password === data.password) {
+        localStorage.setItem("loginData", JSON.stringify(user));
+        alert("Login successful!");
         navigate("/admin/list");
       } else {
-        alert("First Do the Signup");
-        navigate("/signup");
+        alert("Password does not match");
       }
-     } else {
-      alert("Please fix the errors before submitting.");
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed. Please try again.");
     }
   };
 
@@ -89,45 +64,42 @@ const Login = () => {
     <Box
       sx={{
         height: "100vh",
+        bgcolor: "#f0f0f0",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        bgcolor: "#f9f9f9",
       }}
     >
-      <Paper elevation={3} sx={{ p: 4, width: 350 }}>
+      <Paper elevation={3} sx={{ padding: 4, width: 300 }}>
         <Typography variant="h5" gutterBottom>
           Login
         </Typography>
-        <form onSubmit={handleSubmit}>
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <InputLabel>Email</InputLabel>
           <TextField
-            label="Email"
-            type="email"
             fullWidth
-            required
             margin="normal"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            error={!!error.email}
-            helperText={error.email}
+            {...register("email")}
+            error={!!errors.email}
+            helperText={errors.email?.message}
           />
+
+          <InputLabel>Password</InputLabel>
           <TextField
-            label="Password"
+            fullWidth
             type="password"
-            fullWidth
-            required
             margin="normal"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            error={!!error.password}
-            helperText={error.password}
+            {...register("password")}
+            error={!!errors.password}
+            helperText={errors.password?.message}
           />
-          <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+
+          <Button fullWidth type="submit" variant="contained" sx={{ mt: 2 }}>
             Login
           </Button>
         </form>
+
         <Typography variant="body2" sx={{ mt: 2 }}>
           Don't have an account?{" "}
           <Link href="/signup" underline="hover">
